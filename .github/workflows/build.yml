@@ -42,8 +42,6 @@ jobs:
           version="${version#Dockerfile.}" # Remove "Dockerfile." prefix if it exists
           echo "::set-output name=version::${version}"
         shell: bash
-
-
       - name: Build and Publish
         uses: docker/build-push-action@v4
         with:
@@ -51,3 +49,10 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ steps.extract_version.outputs.version }}
+      - name: Build and Publish arm64
+        uses: docker/build-push-action@v4
+        with:
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ steps.extract_version.outputs.version }}-arm64
