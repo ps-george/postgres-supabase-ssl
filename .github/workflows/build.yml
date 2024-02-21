@@ -1,4 +1,4 @@
-name: Docker Image CI/CD for timescale + postgis image
+name: Docker Image CI/CD for supabase postgres with ssl image
 
 on:
   workflow_dispatch:
