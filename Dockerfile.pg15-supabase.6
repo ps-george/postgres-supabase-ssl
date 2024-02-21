@@ -13,6 +13,10 @@ RUN echo "postgres ALL=(root) NOPASSWD: /usr/bin/mkdir, /bin/chown" > /etc/sudoe
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
+# Move files from where supabase put them to where we will look for them
+# (supabase CMD has -D /etc/postgresql/)
+RUN cp /etc/postgresql/*.conf /var/lib/postgresql/data/
+
 # Add entrypoint wrapper
 COPY wrapper.sh /usr/local/bin/wrapper.sh
 
