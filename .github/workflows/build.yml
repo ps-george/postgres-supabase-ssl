@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        dockerfile: ['Dockerfile.pg15-supabase.3']
+        dockerfile: ['Dockerfile.pg15-supabase.4']
 
     steps:
       - name: Checkout sources
