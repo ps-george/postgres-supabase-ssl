@@ -1,0 +1,57 @@
+####################
+# Download gosu for easy step-down from root
+####################
+FROM ubuntu:focal as gosu
+ARG TARGETARCH
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gnupg \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+# Download binary
+ARG GOSU_VERSION=1.16
+ARG GOSU_GPG_KEY=B42F6819007F00F88E364FD4036A9C25BF357DD4
+ADD https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$TARGETARCH \
+    /usr/local/bin/gosu
+ADD https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$TARGETARCH.asc \
+    /usr/local/bin/gosu.asc
+# Verify checksum
+RUN gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys $GOSU_GPG_KEY && \
+    gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu && \
+    gpgconf --kill all && \
+    chmod +x /usr/local/bin/gosu
+
+FROM supabase/postgres:15.1.1.20
+
+# Install OpenSSL and sudo
+RUN apt-get update && apt-get install -y openssl sudo
+
+# Allow the postgres user to execute certain commands as root without a password
+RUN echo "postgres ALL=(root) NOPASSWD: /usr/bin/mkdir, /bin/chown" > /etc/sudoers.d/postgres
+
+# Override entrypoint
+COPY docker-entrypoint.sh /supa-entrypoint.sh
+RUN chmod +x /supa-entrypoint.sh
+
+# Add entrypoint wrapper
+COPY wrapper.sh /usr/local/bin/wrapper.sh
+
+# Add init script
+COPY init-ssl.sh /docker-entrypoint-initdb.d/
+
+# Set permissions
+RUN chmod +x /usr/local/bin/wrapper.sh
+RUN chmod +x /docker-entrypoint-initdb.d/init-ssl.sh
+
+# Add upstream entrypoint script
+COPY --from=gosu /usr/local/bin/gosu /usr/local/bin/gosu
+
+USER postgres
+
+# Override the ENTRYPOINT with a wrapper script
+ENTRYPOINT ["wrapper.sh"]
+
+# Start postgres listening on port 5432
+# N.B. in supabase/postgres the data directory is /var/lib/postgresql/data
+CMD ["postgres", "--port=5432", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+

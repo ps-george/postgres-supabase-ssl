@@ -13,4 +13,4 @@ unset PGPORT
 
 # Call the entrypoint script with the
 # approriate PGHOST
-/docker-entrypoint.sh "$@"
+/supa-entrypoint.sh "$@"
