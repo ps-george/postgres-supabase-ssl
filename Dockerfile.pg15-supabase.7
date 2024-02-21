@@ -15,7 +15,7 @@ RUN chmod +x /docker-entrypoint.sh
 
 # Move files from where supabase put them to where we will look for them
 # (supabase CMD has -D /etc/postgresql/ which is why they were there)
-RUN mkdir -p /var/lib/postgresql/data && cp /etc/postgresql/*.conf /var/lib/postgresql/data/
+RUN mkdir -p /var/lib/postgresql/data/pgdata && cp /etc/postgresql/*.conf /var/lib/postgresql/data/pgdata/
 
 # Add entrypoint wrapper
 COPY wrapper.sh /usr/local/bin/wrapper.sh
